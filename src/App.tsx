@@ -1,7 +1,8 @@
-import { useEffect, useState, type MouseEvent } from "react";
+import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback } from "./components/ui/avatar";
 import { Button } from "./components/ui/button";
 import { Badge } from "./components/ui/badge";
+import Tabla from "./components/Tabla";
 
 interface tablaInterface {
   tabla: number;
@@ -31,6 +32,26 @@ function App() {
     { tabla: 8, bg: "bg-orange-300" },
     { tabla: 9, bg: "bg-cyan-300" },
   ];
+  const [titleIndex, setTitleIndex] = useState(0);
+
+  const titleArray = [
+    (level: number) =>
+      `Nivel ${level} desbloqueado 🎉. ¿Listo para la tabla del ${level}?`,
+    (level: number) =>
+      `Nivel ${level} – Practica la tabla del ${level} y sube de nivel`,
+    (level: number) =>
+      `¡Genial! Estás en el nivel ${level}. Vamos a aprender la tabla del ${level}`,
+    (level: number) =>
+      `¡Nivel ${level}! Aprende la tabla que acabas de desbloquear`,
+  ];
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTitleIndex((prev) => (prev + 1) % titleArray.length);
+    }, 5000); // cambia cada 500ms
+    return () => clearInterval(interval);
+  }, []);
+
+  const resetSelectedTableHandle = () => setSelectedTable(null);
 
   const resetHandle = () => {
     setSelectedTable(null);
@@ -51,156 +72,79 @@ function App() {
   }, [level]);
   return (
     <>
-      <main className="min-h-screen flex flex-col gap-6 bg-linear-to-br from-blue-100 to-purple-100 p-4">
-        {/* Header */}
-        <header className="bg-black text-white w-full p-4 flex items-center justify-between rounded-xl shadow-md">
-          <p className="flex-1 text-xl md:text-2xl font-bold">
-            Aprende las Tablas <Badge>Nivel {level}</Badge>
-          </p>
-          <Avatar>
-            {/*<AvatarImage src="https://github.com/shadcn.png" />*/}
-            <AvatarFallback>T</AvatarFallback>
-          </Avatar>
-        </header>
+      <div className="bg-linear-to-br from-blue-100 to-purple-100">
+        <main className="min-h-screen md:max-w-md lg:max-w-2xl m-auto flex flex-col gap-6  p-4">
+          {/* Header */}
+          <header className="bg-black text-white w-full p-4 flex items-center justify-between rounded-xl shadow-md">
+            <p className="flex-1 text-xl md:text-2xl font-bold">
+              Aprende las Tablas <Badge>Nivel {level}</Badge>
+            </p>
+            <Avatar>
+              {/*<AvatarImage src="https://github.com/shadcn.png" />*/}
+              <AvatarFallback>T</AvatarFallback>
+            </Avatar>
+          </header>
 
-        {/* Home: selección de tabla */}
-        {!selectedTable ? (
-          <div className="flex flex-col items-center w-full">
-            <h1 className="text-2xl md:text-5xl font-extrabold text-center text-indigo-700 drop-shadow-lg mb-6">
-              ¡Hola! Elige la tabla que quieres aprender
-            </h1>
+          {/* Home: selección de tabla */}
+          {!selectedTable ? (
+            <div className="flex flex-col items-center w-full">
+              <h1
+                className="text-3xl md:text-5xl font-extrabold text-center mb-6
+    bg-gradient-to-r from-pink-500 via-indigo-500 to-cyan-500
+    bg-[length:200%_200%]
+    animate-gradient
+    bg-clip-text text-transparent
+    drop-shadow-lg"
+              >
+                {titleArray[titleIndex](level)}
+              </h1>
 
-            <div
-              className={`grid ${level >= 2 && "grid-cols-2"}  md:grid-cols-3 xl:grid-cols-4 gap-4 px-2 max-w-5xl`}
-            >
-              {tablas
-                .filter((t) => t.tabla <= level)
-                .map((t) => (
-                  <button
-                    onClick={() => setSelectedTable(t.tabla)}
-                    key={t.tabla}
-                    className={`mx-auto w-full max-w-xs rounded-2xl shadow-lg transform hover:scale-105 transition-transform duration-300 ${t.bg} p-4`}
-                  >
-                    {/*<CardHeader>
-                      <CardTitle className="text-2xl font-bold text-center">
-                        Tabla del {t.tabla}
-                      </CardTitle>
-                    </CardHeader>*/}
+              <div
+                className={`grid ${level >= 2 ? "grid-cols-2" : "grid-cols-1"}  md:grid-cols-3  gap-4 px-2 max-w-5xl`}
+              >
+                {tablas
+                  .filter((t) => t.tabla <= level)
+                  .map((t) => (
+                    <button
+                      onClick={() => setSelectedTable(t.tabla)}
+                      key={t.tabla}
+                      className={`mx-auto w-full max-w-xs rounded-2xl shadow-lg transform hover:scale-105 transition-transform duration-300 ${t.bg} ${t.tabla === level ? "animate-wiggle  ring-4 ring-white" : ""} p-4 group`}
+                    >
+                      <p className="font-bold text-xl">Tabla del:</p>
+                      <h2 className="text-4xl font-black">{t.tabla}</h2>
+                      <p>Comenzar</p>
+                    </button>
+                  ))}
 
-                    <p className="font-bold text-xl">Tabla del:</p>
-                    <h2 className="text-4xl font-black">{t.tabla}</h2>
-                    <Button className="bg-white text-black font-bold px-4 py-2 rounded-lg shadow-md hover:shadow-xl hover:bg-yellow-200 transition-all">
-                      Comenzar
+                {level === tablas.length && (
+                  <>
+                    <button
+                      className={`mx-auto w-full max-w-xs rounded-2xl shadow-lg transform hover:scale-105 transition-transform duration-300 bg-gray-300 p-4`}
+                    >
+                      <p className="font-bold text-xl">Coming soon</p>
+                    </button>
+                    <Button className="mt-8" onClick={resetHandle}>
+                      reset all
                     </Button>
-                  </button>
-                ))}
+                  </>
+                )}
+              </div>
+
+              {/*<Button className="mt-8" onClick={() => setLevel(tablas.length)}>
+                complete all
+              </Button>*/}
             </div>
-            <Button className="mt-6" onClick={resetHandle}>
-              Resetear todo
-            </Button>
-          </div>
-        ) : (
-          <Tabla
-            levelUp={levelUpHandle}
-            reset={resetHandle}
-            numero={selectedTable}
-          />
-        )}
-      </main>
-    </>
-  );
-}
-
-function Tabla({
-  numero,
-  reset,
-  levelUp,
-}: {
-  numero: number;
-  reset: () => void;
-  levelUp: (tablaLevel: number) => void;
-}) {
-  const [index, setIndex] = useState(0);
-  const [finished, setFinished] = useState(false);
-
-  const [correctAnswer, setCorrectAnswer] = useState(0);
-  const [corrects, setCorrects] = useState(0);
-  const [answers, setAnswers] = useState<number[]>([]);
-
-  const datos = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-
-  const selectNumber = (e: MouseEvent<HTMLButtonElement>) => {
-    const currentNumberSelect = e.currentTarget.dataset.number;
-    if (Number(currentNumberSelect) === correctAnswer) {
-      setCorrects((prev) => prev + 1);
-    }
-
-    if (datos.length <= index + 1) {
-      setFinished(true);
-      return;
-    }
-
-    setIndex((prev) => prev + 1);
-  };
-
-  const loadData = () => {
-    const correct = Number(numero) * datos[index];
-    setCorrectAnswer(correct);
-
-    const options = new Set<number>();
-    options.add(correct);
-
-    while (options.size < 3) {
-      const variation = Math.floor(Math.random() * 5) + 1;
-      const fake =
-        Math.random() > 0.5 ? correct + variation : correct - variation;
-
-      if (fake > 0 && fake !== correct) {
-        options.add(fake);
-      }
-    }
-
-    const shuffled = Array.from(options).sort(() => Math.random() - 0.5);
-
-    setAnswers(shuffled);
-  };
-
-  useEffect(() => {
-    loadData();
-  }, [index]);
-
-  useEffect(() => {
-    if (finished && corrects === datos.length) {
-      levelUp(numero);
-    }
-  }, [finished, corrects]);
-
-  return (
-    <>
-      <div className="flex flex-col w-full px-6 gap-4 text-center">
-        <h1 className="text-3xl font-bold">Learn Table</h1>
-        <h2 className="text-4xl">
-          {numero} x {datos[index]}?
-        </h2>
-        {finished && "Terminado"}
-        <p>
-          {corrects}/{datos.length}
-        </p>
-        {answers.map((a) => (
-          <Button
-            key={a}
-            data-number={String(a)}
-            onClick={selectNumber}
-            className="text-lg"
-            disabled={finished}
-          >
-            {a}
-          </Button>
-        ))}
-
-        {finished && <Button onClick={reset}>Volver</Button>}
+          ) : (
+            <Tabla
+              levelUp={levelUpHandle}
+              reset={resetSelectedTableHandle}
+              numero={selectedTable}
+            />
+          )}
+        </main>
       </div>
     </>
   );
 }
+
 export default App;
