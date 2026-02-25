@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import confetti from "canvas-confetti";
 import { generateTable, type TableQuestion } from "@/lib/gameEngine";
-import type { GameMode } from "@/types/game";
 import GameResultModal from "./GameResultModal";
 import { useGame } from "@/context/useGame";
 
@@ -17,7 +16,7 @@ export default function Tabla({ numero, onExit }: TablaProps) {
   const [question, setQuestion] = useState<TableQuestion | null>(null);
   const [finished, setFinished] = useState(false);
   const [corrects, setCorrects] = useState(0);
-  const { progress, dispatch } = useGame();
+  const { dispatch } = useGame();
 
   const selectAnswer = (currentSelect: number) => {
     const isCorrect = question?.correctAnswer === currentSelect;
