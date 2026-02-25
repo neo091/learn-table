@@ -1,65 +1,46 @@
-import { useEffect, useState, type MouseEvent } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import confetti from "canvas-confetti";
+import { generateTable, type TableQuestion } from "@/lib/gameEngine";
+import type { GameMode } from "@/types/game";
 
-export default function Tabla({
-  numero,
-  reset,
-  levelUp,
-}: {
+interface TablaProps {
   numero: number;
   reset: () => void;
-  levelUp: (tablaLevel: number) => void;
-}) {
+  levelUp: (tablaLevel: GameMode) => void;
+}
+const DATOS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+export default function Tabla({ numero, reset, levelUp }: TablaProps) {
   const [index, setIndex] = useState(0);
+  const [question, setQuestion] = useState<TableQuestion | null>(null);
   const [finished, setFinished] = useState(false);
-
-  const [correctAnswer, setCorrectAnswer] = useState(0);
   const [corrects, setCorrects] = useState(0);
-  const [answers, setAnswers] = useState<number[]>([]);
-
   const [showVictory, setShowVictory] = useState(false);
 
-  const datos = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const selectAnswer = (currentSelect: number) => {
+    const isCorrect = question?.correctAnswer === currentSelect;
+    if (isCorrect) setCorrects((prev) => prev + 1);
 
-  const selectNumber = (e: MouseEvent<HTMLButtonElement>) => {
-    const currentNumberSelect = e.currentTarget.dataset.number;
-    if (Number(currentNumberSelect) === correctAnswer) {
-      setCorrects((prev) => prev + 1);
-    }
+    if (DATOS.length <= index + 1) {
+      const isPerfect = corrects + (isCorrect ? 1 : 0) === DATOS.length;
 
-    if (datos.length <= index + 1) {
+      if (isPerfect) {
+        levelUp("tables");
+        setShowVictory(true);
+        launchConfetti();
+      }
       setFinished(true);
+
       return;
     }
 
     setIndex((prev) => prev + 1);
   };
 
-  const loadData = () => {
-    const correct = Number(numero) * datos[index];
-    setCorrectAnswer(correct);
-
-    const options = new Set<number>();
-    options.add(correct);
-
-    while (options.size < 3) {
-      const variation = Math.floor(Math.random() * 5) + 1;
-      const fake =
-        Math.random() > 0.5 ? correct + variation : correct - variation;
-
-      if (fake > 0 && fake !== correct) {
-        options.add(fake);
-      }
-    }
-
-    const shuffled = Array.from(options).sort(() => Math.random() - 0.5);
-
-    setAnswers(shuffled);
-  };
-
   useEffect(() => {
-    loadData();
+    const q = generateTable(numero, DATOS[index]);
+    setQuestion(q);
   }, [index]);
 
   const launchConfetti = () => {
@@ -107,37 +88,29 @@ export default function Tabla({
     }, 250);
   };
 
-  useEffect(() => {
-    if (finished && corrects === datos.length) {
-      levelUp(numero);
-      setShowVictory(true);
-      launchConfetti();
-    }
-  }, [finished, corrects]);
-
   return (
     <>
       <div className="flex flex-col w-full px-6 gap-4 text-center">
         <h1 className="text-3xl font-bold">Learn Table</h1>
         <h2 className="text-4xl">
-          {numero} x {datos[index]}?
+          {numero} x {DATOS[index]}?
         </h2>
         {finished && "Terminado"}
         <p>
-          {corrects}/{datos.length}
+          {corrects}/{DATOS.length}
         </p>
-        {answers.map((a) => (
+        {question?.options.map((q) => (
           <Button
-            key={a}
-            data-number={String(a)}
-            onClick={selectNumber}
+            key={q}
+            onClick={() => {
+              selectAnswer(q);
+            }}
             className="text-lg"
             disabled={finished}
           >
-            {a}
+            {q}
           </Button>
         ))}
-
         <Button onClick={reset} className="mt-6 bg-blue-600">
           Volver
         </Button>
@@ -154,7 +127,7 @@ export default function Tabla({
 
             <Button
               onClick={reset}
-              className="mt-6 text-lg font-bold bg-gradient-to-r from-yellow-400 to-orange-500 hover:scale-105 transition-transform"
+              className="mt-6 text-lg font-bold bg-linear-to-r from-yellow-400 to-orange-500 hover:scale-105 transition-transform"
             >
               Continuar
             </Button>
