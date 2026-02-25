@@ -3,20 +3,21 @@ import { Button } from "./ui/button";
 import confetti from "canvas-confetti";
 import { generateTable, type TableQuestion } from "@/lib/gameEngine";
 import type { GameMode } from "@/types/game";
+import GameResultModal from "./GameResultModal";
+import { useGame } from "@/context/useGame";
 
 interface TablaProps {
   numero: number;
-  reset: () => void;
-  levelUp: (tablaLevel: GameMode) => void;
+  onExit: () => void;
 }
 const DATOS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-export default function Tabla({ numero, reset, levelUp }: TablaProps) {
+export default function Tabla({ numero, onExit }: TablaProps) {
   const [index, setIndex] = useState(0);
   const [question, setQuestion] = useState<TableQuestion | null>(null);
   const [finished, setFinished] = useState(false);
   const [corrects, setCorrects] = useState(0);
-  const [showVictory, setShowVictory] = useState(false);
+  const { progress, dispatch } = useGame();
 
   const selectAnswer = (currentSelect: number) => {
     const isCorrect = question?.correctAnswer === currentSelect;
@@ -26,12 +27,10 @@ export default function Tabla({ numero, reset, levelUp }: TablaProps) {
       const isPerfect = corrects + (isCorrect ? 1 : 0) === DATOS.length;
 
       if (isPerfect) {
-        levelUp("tables");
-        setShowVictory(true);
         launchConfetti();
+        dispatch({ type: "LEVEL_UP", payload: "tables" });
       }
       setFinished(true);
-
       return;
     }
 
@@ -95,7 +94,6 @@ export default function Tabla({ numero, reset, levelUp }: TablaProps) {
         <h2 className="text-4xl">
           {numero} x {DATOS[index]}?
         </h2>
-        {finished && "Terminado"}
         <p>
           {corrects}/{DATOS.length}
         </p>
@@ -111,28 +109,17 @@ export default function Tabla({ numero, reset, levelUp }: TablaProps) {
             {q}
           </Button>
         ))}
-        <Button onClick={reset} className="mt-6 bg-blue-600">
+        <Button onClick={onExit} className="mt-6 bg-blue-600">
           Volver
         </Button>
       </div>
 
-      {showVictory && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center z-50 animate-fadeIn">
-          <div className="bg-white rounded-3xl p-10 shadow-2xl text-center animate-scaleIn">
-            <div className="text-6xl animate-bounce">🏆</div>
-            <h2 className="text-4xl font-black text-green-600 mt-4">
-              ¡Perfecto!
-            </h2>
-            <p className="text-lg mt-2">10 de 10 correctas 🎉</p>
-
-            <Button
-              onClick={reset}
-              className="mt-6 text-lg font-bold bg-linear-to-r from-yellow-400 to-orange-500 hover:scale-105 transition-transform"
-            >
-              Continuar
-            </Button>
-          </div>
-        </div>
+      {finished && (
+        <GameResultModal
+          corrects={corrects}
+          total={DATOS.length}
+          onContinue={onExit}
+        />
       )}
     </>
   );

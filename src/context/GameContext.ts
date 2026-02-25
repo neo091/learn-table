@@ -4,6 +4,7 @@ import type { GameAction } from "./GameReducer";
 
 interface GameContextType {
   progress: GameState["progress"];
+  currentMode: GameState["currentMode"];
   dispatch: Dispatch<GameAction>
 }
 

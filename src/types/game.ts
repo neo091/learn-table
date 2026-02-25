@@ -10,3 +10,7 @@ export interface GameState {
   progress: Progress;
   currentMode: GameMode | null
 }
+
+export interface MenuPrincipalProps {
+  onSelectMode: (mode: GameMode) => void;
+}

@@ -1,17 +1,17 @@
 import { useEffect, useReducer, type ReactNode } from "react";
 import { GameContext } from "./GameContext";
-import type { GameMode, GameState, Progress } from "@/types/game";
+import type { GameState } from "@/types/game";
 import { GameReducer } from "./GameReducer";
 
 interface GameProviderProps {
   children: ReactNode;
 }
 
-const LOCAL_STORAGE_KEY = "progress";
+const LOCAL_STORAGE_KEY = "gameState";
 
 const initialState: GameState = {
-  progress: { tables: 1, multiplication: 0, addition: 0 },
-  currentMode: "tables",
+  progress: { tables: 1, multiplication: 1, addition: 1 },
+  currentMode: null,
 };
 
 const GameProvider = ({ children }: GameProviderProps) => {
@@ -19,11 +19,11 @@ const GameProvider = ({ children }: GameProviderProps) => {
     const storedProgress = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (storedProgress) {
       try {
-        const parsed: Progress = JSON.parse(storedProgress);
+        const parsed: GameState = JSON.parse(storedProgress);
         return {
-          progress: parsed,
-          currentMode: "tables" as GameMode, // cast explícito
-        } satisfies GameState;
+          progress: parsed.progress,
+          currentMode: parsed.currentMode, // cast explícito
+        };
       } catch {
         return { ...initialState };
       }
@@ -32,10 +32,16 @@ const GameProvider = ({ children }: GameProviderProps) => {
   });
 
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state.progress));
-  }, [state.progress]);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
+  }, [state.progress, state.currentMode]);
   return (
-    <GameContext.Provider value={{ progress: state.progress, dispatch }}>
+    <GameContext.Provider
+      value={{
+        currentMode: state.currentMode,
+        progress: state.progress,
+        dispatch,
+      }}
+    >
       {children}
     </GameContext.Provider>
   );

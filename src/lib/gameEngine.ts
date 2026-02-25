@@ -55,7 +55,7 @@ export function generateQuestion(
       b,
       operator: "×",
       correctAnswer,
-      options: generateOptions(correctAnswer, 3),
+      options: generateOptions(correctAnswer, 4),
     };
   }
 
@@ -70,6 +70,6 @@ export function generateQuestion(
     b,
     operator: "+",
     correctAnswer,
-    options: generateOptions(correctAnswer, 3),
+    options: generateOptions(correctAnswer, 4),
   };
 }
