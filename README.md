@@ -27,3 +27,7 @@ Learn Table es un juego educativo interactivo diseñado para que los niños apre
 # Licencia
 
 Este proyecto está bajo la licencia MIT.
+## Onboarding
+
+Si eres nuevo en el proyecto, revisa la guía técnica: `docs/ONBOARDING.md`.
+
