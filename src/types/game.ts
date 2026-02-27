@@ -12,5 +12,13 @@ export interface GameState {
 }
 
 export interface MenuPrincipalProps {
-  onSelectMode: (mode: GameMode) => void;
+  onSelectMode: (mode: MenuMode) => void;
+}
+
+export interface MenuMode {
+  mode: GameMode;
+  label: string;
+  emoji: string;
+  description: string;
+  cardClass: string;
 }

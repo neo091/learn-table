@@ -30,10 +30,13 @@ export function generateOptions(correct: number, optionsNumber: number): number[
   return Array.from(options).sort(() => Math.random() - 0.5);
 }
 
-export function generateTable(level: number, multiplier: number): TableQuestion {
+export function generateTable(level: number, multiplier: number): Question {
   const correctAnswer = level * multiplier
 
   return {
+    a: 1,
+    b: 1,
+    operator: "×",
     correctAnswer,
     options: generateOptions(correctAnswer, 3)
   }

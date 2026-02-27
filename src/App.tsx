@@ -1,15 +1,18 @@
-import type { GameMode } from "./types/game";
+import type { MenuMode } from "./types/game";
 import { useGame } from "./context/useGame";
 import MenuPrincipal from "./components/MenuPrincipal";
+import Game from "./components/Game";
+import { useState } from "react";
 import MenuTablas from "./components/MenuTablas";
-import MultiplicationMode from "./components/MultiplicationMode";
-import AdditionMode from "./components/AdditionMode";
 
 function App() {
+  const [menu, setMenu] = useState<MenuMode>();
   const { currentMode, dispatch } = useGame();
 
-  const onSelectMode = (mode: GameMode) =>
-    dispatch({ type: "SET_MODE", payload: mode });
+  const onSelectMode = (menu: MenuMode) => {
+    setMenu(menu);
+    dispatch({ type: "SET_MODE", payload: menu.mode });
+  };
 
   const handleReset = () => dispatch({ type: "RESET_MODE" });
 
@@ -21,11 +24,9 @@ function App() {
             <MenuPrincipal onSelectMode={onSelectMode} />
           ) : currentMode === "tables" ? (
             <MenuTablas onExit={handleReset} />
-          ) : currentMode === "multiplication" ? (
-            <MultiplicationMode onExit={handleReset} />
-          ) : currentMode === "addition" ? (
-            <AdditionMode onExit={handleReset} />
-          ) : null}
+          ) : (
+            <Game menu={menu} onExit={handleReset} />
+          )}
         </main>
       </div>
     </>

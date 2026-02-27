@@ -1,10 +1,17 @@
-import { useEffect, useState, type MouseEvent } from "react";
-import { useGame } from "@/context/useGame";
-import { generateQuestion, type Question } from "@/lib/gameEngine";
+import type { GameMode, MenuMode } from "@/types/game";
 import { Button } from "./ui/button";
-import confetti from "canvas-confetti";
+import { useGame } from "@/context/useGame";
+import { useEffect, useState } from "react";
+import { generateQuestion, type Question } from "@/lib/gameEngine";
+import GameResultModal from "./GameResultModal";
 
-export default function MultiplicationMode({ onExit }: { onExit: () => void }) {
+export default function Game({
+  menu,
+  onExit,
+}: {
+  menu?: MenuMode;
+  onExit: () => void;
+}) {
   const { progress, dispatch } = useGame();
 
   const [question, setQuestion] = useState<Question | null>(null);
@@ -13,16 +20,20 @@ export default function MultiplicationMode({ onExit }: { onExit: () => void }) {
   const [finished, setFinished] = useState(false);
 
   const TOTAL = 10;
+  const level = (menu && progress[menu.mode]) || 1;
+  const mode = (menu && menu.mode) || ("multiplication" as GameMode);
 
   useEffect(() => {
-    const q = generateQuestion("multiplication", progress.multiplication || 1);
+    const q = generateQuestion(mode, level);
+
     setQuestion(q);
   }, [index]);
 
-  const selectAnswer = (e: MouseEvent<HTMLButtonElement>) => {
-    const value = Number(e.currentTarget.dataset.number);
+  const selectAnswer = (currentSelect: number) => {
+    const isCorrect = question?.correctAnswer === currentSelect;
+    console.log(isCorrect);
 
-    if (value === question?.correctAnswer) {
+    if (isCorrect) {
       setCorrects((prev) => prev + 1);
     }
 
@@ -37,24 +48,15 @@ export default function MultiplicationMode({ onExit }: { onExit: () => void }) {
   // LEVEL UP
   useEffect(() => {
     if (finished && corrects === TOTAL) {
-      dispatch({ type: "LEVEL_UP", payload: "multiplication" });
-      launchConfetti();
+      dispatch({ type: "LEVEL_UP", payload: mode });
     }
   }, [finished]);
-
-  const launchConfetti = () => {
-    confetti({
-      particleCount: 150,
-      spread: 90,
-      origin: { y: 0.6 },
-    });
-  };
 
   return (
     <div className="flex flex-col gap-6 text-center mt-6">
       <h1 className="text-4xl font-black">Multiplicación</h1>
 
-      <p className="text-lg text-gray-600">Nivel {progress.multiplication}</p>
+      <p className="text-lg text-gray-600">Nivel {level}</p>
 
       {!finished && question && (
         <>
@@ -67,7 +69,7 @@ export default function MultiplicationMode({ onExit }: { onExit: () => void }) {
               <Button
                 key={opt}
                 data-number={opt}
-                onClick={selectAnswer}
+                onClick={() => selectAnswer(opt)}
                 className="text-2xl py-6"
               >
                 {opt}
@@ -86,22 +88,11 @@ export default function MultiplicationMode({ onExit }: { onExit: () => void }) {
       )}
 
       {finished && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center z-50 animate-fadeIn">
-          <div className="bg-white rounded-3xl p-10 shadow-2xl text-center animate-scaleIn">
-            <div className="text-6xl animate-bounce">🏆</div>
-            <h2 className="text-4xl font-black text-green-600 mt-4">
-              ¡Perfecto!
-            </h2>
-            <p className="text-lg mt-2">10 de 10 correctas 🎉</p>
-
-            <Button
-              onClick={onExit}
-              className="mt-6 text-lg font-bold bg-linear-to-r from-yellow-400 to-orange-500 hover:scale-105 transition-transform"
-            >
-              Continuar
-            </Button>
-          </div>
-        </div>
+        <GameResultModal
+          corrects={corrects}
+          total={TOTAL}
+          onContinue={onExit}
+        />
       )}
     </div>
   );

@@ -5,10 +5,10 @@ export function isModeUnlocked(mode: GameMode, progress: Progress) {
     case "tables":
       return true;
     case "addition":
-      return progress.tables >= 2;
+      return progress.tables >= 5;
 
     case "multiplication":
-      return progress.addition >= 3;
+      return progress.addition >= 10;
 
     default:
       return false;

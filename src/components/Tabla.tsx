@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
-import confetti from "canvas-confetti";
 import { generateTable, type TableQuestion } from "@/lib/gameEngine";
 import GameResultModal from "./GameResultModal";
 import { useGame } from "@/context/useGame";
@@ -16,17 +15,16 @@ export default function Tabla({ numero, onExit }: TablaProps) {
   const [question, setQuestion] = useState<TableQuestion | null>(null);
   const [finished, setFinished] = useState(false);
   const [corrects, setCorrects] = useState(0);
-  const { dispatch } = useGame();
+  const { progress, dispatch } = useGame();
 
   const selectAnswer = (currentSelect: number) => {
     const isCorrect = question?.correctAnswer === currentSelect;
+    const isPerfect = corrects + (isCorrect ? 1 : 0) === DATOS.length;
+
     if (isCorrect) setCorrects((prev) => prev + 1);
 
-    if (DATOS.length <= index + 1) {
-      const isPerfect = corrects + (isCorrect ? 1 : 0) === DATOS.length;
-
-      if (isPerfect) {
-        launchConfetti();
+    if (isPerfect) {
+      if (numero === progress.tables) {
         dispatch({ type: "LEVEL_UP", payload: "tables" });
       }
       setFinished(true);
@@ -40,51 +38,6 @@ export default function Tabla({ numero, onExit }: TablaProps) {
     const q = generateTable(numero, DATOS[index]);
     setQuestion(q);
   }, [index]);
-
-  const launchConfetti = () => {
-    const duration = 5000; // 5 segundos (15 es demasiado para niños)
-    const animationEnd = Date.now() + duration;
-
-    const defaults = {
-      startVelocity: 30,
-      spread: 360,
-      ticks: 60,
-      zIndex: 1000,
-    };
-
-    const randomInRange = (min: number, max: number) => {
-      return Math.random() * (max - min) + min;
-    };
-
-    const interval = setInterval(() => {
-      const timeLeft = animationEnd - Date.now();
-
-      if (timeLeft <= 0) {
-        clearInterval(interval);
-        return;
-      }
-
-      const particleCount = 50 * (timeLeft / duration);
-
-      confetti({
-        ...defaults,
-        particleCount,
-        origin: {
-          x: randomInRange(0.1, 0.3),
-          y: Math.random() * 0.4,
-        },
-      });
-
-      confetti({
-        ...defaults,
-        particleCount,
-        origin: {
-          x: randomInRange(0.7, 0.9),
-          y: Math.random() * 0.4,
-        },
-      });
-    }, 250);
-  };
 
   return (
     <>
